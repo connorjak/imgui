@@ -1,0 +1,357 @@
+{
+	"SystemManager": {
+		"Systems": [
+			{
+				"Nametag": "Data_Monitor",
+				"Source": "Data_Monitor/bin/Data_Monitor_2",
+				"Type": "Data",
+				"Frequency": 20.0,
+				"Inst_Parameters": {
+					"MaxLines": 1000
+				}
+			},
+			{
+				"Nametag": "Spicy",
+			  "Source": "Spicy/bin/Spicy",
+			  "Type": "Spice",
+				"Frequency": 120.0,
+			  "Inst_Parameters": {
+					"UseCurrentTime": true,
+					"timescale": 1.0
+				}
+			}
+		]
+	},
+	"DataManager": {
+		"entities": [
+			{
+				"Name": "Sun",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Generate_Collider2": false,
+				"Generate_Collider3": false,
+				"Generate_Collider4": false,
+				"Generate_Collider5": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Sun/Solar_System_Models_Sun.Solar_System_Models_Sun'",
+				"Scale": 1000000.0,
+				"Mass": 1.0,
+				"RenderFar": true,
+				"Parameters": {
+					"Sta2te": "Free",
+					"ControlledObject": false,
+					"State": "Free",
+					"IsLightSource": true,
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "SUN",
+					"bodyframe": "IAU_SUN",
+					"Test":{
+						"bodyframe": "IAU_SUN",
+						"Test":{
+							"bodyframe": "IAU_SUN",
+							"observewr": "EARTH",
+							"Test":{
+								"bodyframe": "IAU_SUN",
+								"observer": "EARTH",
+								"Test":{
+									"bodyframe": "IAU_SUN",
+									"Test":{
+										"bodyframe": "IAU_SUN",
+										"observer": "EARTH"
+									}
+								}
+							},
+							"observer": "EARTH"
+						}
+					}
+				}
+			},
+			{
+				"Name": "Mercury",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Mercury/Solar_System_Models_Mercury.Solar_System_Models_Mercury'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "MERCURY",
+					"bodyframe": "IAU_MERCURY"
+				}
+			},
+			{
+				"Name": "Venus",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Venus/Solar_System_Models_Venus.Solar_System_Models_Venus'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "VENUS",
+					"bodyframe": "IAU_VENUS"
+				}
+			},
+			{
+				"Name": "Earth",
+				"Type": "UI",
+				"Systems": ["Spicy", "Data_Monitor"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Earth/Solar_System_Models_Earth.Solar_System_Models_Earth'",
+				"BP_Path": "/Game/Solar_System/Earth/Octants8k/OctantEarthBP.OctantEarthBP_C",
+				"Scale": 1,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "EARTH",
+					"bodyframe": "IAU_EARTH",
+					"AtmosphereType": "Dome"
+				}
+			},
+			{
+				"Name": "Moon",
+				"Type": "UI",
+				"Systems": ["Spicy", "Data_Monitor"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Moon/Solar_System_Models_Moon.Solar_System_Models_Moon'",
+				"BP_Path": "/Game/Solar_System/Moon/Octants8k/OctantMoonBP.OctantMoonBP_C",
+				"Scale": 1,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "MOON",
+					"bodyframe": "IAU_MOON"
+				}
+			},
+			{
+				"Name": "MARS",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Mars/Solar_System_Models_Mars.Solar_System_Models_Mars'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "MARS",
+					"bodyframe": "IAU_MARS"
+				}
+			},
+			{
+				"Name": "Jupiter",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Jupiter/Solar_System_Models_Jupiter.Solar_System_Models_Jupiter'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "JUPITER BARYCENTER",
+					"bodyframe": "IAU_JUPITER"
+				}
+			},
+			{
+				"Name": "Saturn",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Saturn/Solar_System_Models_Saturn.Solar_System_Models_Saturn'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "SATURN BARYCENTER",
+					"bodyframe": "IAU_SATURN"
+				}
+			},
+			{
+				"Name": "Saturn Rings",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Saturn/Solar_System_Models_Saturn_Ring.Solar_System_Models_Saturn_Ring'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "SATURN BARYCENTER",
+					"bodyframe": "IAU_SATURN"
+				}
+			},
+			{
+				"Name": "Uranus",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Uranus/Solar_System_Models_Uranus.Solar_System_Models_Uranus'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "URANUS BARYCENTER",
+					"bodyframe": "IAU_URANUS"
+				}
+			},
+			{
+				"Name": "Neptune",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Neptune/Solar_System_Models_Neptune.Solar_System_Models_Neptune'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "NEPTUNE BARYCENTER",
+					"bodyframe": "IAU_NEPTUNE"
+				}
+			},
+			{
+				"Name": "Pluto",
+				"Type": "Object",
+				"Systems": ["Spicy"],
+				"Loadable_Mesh": false,
+				"Generate_Collider": false,
+				"Mesh_Path": "StaticMesh'/Game/Solar_System/Pluto/Solar_System_Models_Pluto.Solar_System_Models_Pluto'",
+				"Scale": 1000000,
+				"Mass": 1,
+				"RenderFar": true,
+				"Parameters": {
+					"ControlledObject": false,
+					"State": "Free",
+					"Velocity": ["doubleV3", 0.0, 0.0, 0.0],
+					"AngVelocity": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"Location": ["doubleV3", 0.0, 0.0, 0.0],
+					"Rotation": ["doubleV4", 0.0, 0.0, 0.0, 1.0],
+					"observerframe": "IAU_EARTH",
+					"correction": "NONE",
+					"observer": "EARTH",
+					"time": 0.0,
+					"body": "PLUTO BARYCENTER",
+					"bodyframe": "IAU_PLUTO"
+				}
+			}
+		]
+	}
+}

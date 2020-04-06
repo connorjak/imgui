@@ -9,6 +9,18 @@
 #include <dinput.h>
 #include <tchar.h>
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <sstream>
+
+#include "ParamUI.h"
+
+using namespace rapidjson;
+
 // Data
 static ID3D11Device*            g_pd3dDevice = NULL;
 static ID3D11DeviceContext*     g_pd3dDeviceContext = NULL;
@@ -57,6 +69,38 @@ int main(int, char**)
     ImGui_ImplWin32_Init(hwnd);
     ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
+
+    ////////////////////////////////////////////////////////////////// IMPORT JSON
+    //converts json files to c string 
+    std::stringstream ss;
+    std::string buffer;
+    std::ifstream infs("simulation.json");
+
+    // check if file can be opened
+    if (infs.is_open()) {
+        while (!infs.eof()) {
+            getline(infs, buffer);
+            ss << buffer;
+            ss << "\n";
+        }
+    }
+    else {
+        std::cout << "Error: File is not opening." << std::endl;
+    }
+
+    std::string buffer_str = ss.str();
+    const char* inputJson = buffer_str.c_str();
+
+    Document simJSON;
+    if (simJSON.Parse(inputJson).HasParseError()) {
+        std::cout << "ERROR: Invalid Json file" << std::endl;
+        return false;
+    }
+
+
+
+    ////////////////////////////////////////////////////////////////// IMPORT JSON
+
     // Load Fonts
     // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
     // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
@@ -98,6 +142,29 @@ int main(int, char**)
         ImGui_ImplDX11_NewFrame();
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
+
+        // 0. do what we want to do! ///////////////////////////////////////////////
+        ImGui::Begin("Sim", nullptr);
+        assert(simJSON.IsObject());
+        assert(simJSON.HasMember("DataManager"));
+        Value& js_dataManager = simJSON["DataManager"];
+        Value& js_entities = js_dataManager["entities"];
+        for (Value& entity : js_entities.GetArray())
+        {
+            Value::MemberIterator eName = entity.FindMember("Name");
+            assert(eName != entity.MemberEnd());
+            assert(eName->value.IsString());
+            recurseParamTree(eName->value.GetString(), entity, 0);
+            
+        }
+        ImGui::End();
+        ////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)

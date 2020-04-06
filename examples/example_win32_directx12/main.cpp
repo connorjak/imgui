@@ -9,6 +9,8 @@
 #include <dxgi1_4.h>
 #include <tchar.h>
 
+
+
 //#define DX12_ENABLE_DEBUG_LAYER
 
 #ifdef DX12_ENABLE_DEBUG_LAYER
