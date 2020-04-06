@@ -96,7 +96,8 @@ int main(int, char**)
         std::cout << "ERROR: Invalid Json file" << std::endl;
         return false;
     }
-
+    assert(simJSON.IsObject());
+    assert(simJSON.HasMember("DataManager"));
 
 
     ////////////////////////////////////////////////////////////////// IMPORT JSON
@@ -143,21 +144,67 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        // 0. do what we want to do! ///////////////////////////////////////////////
-        ImGui::Begin("Sim", nullptr);
-        assert(simJSON.IsObject());
-        assert(simJSON.HasMember("DataManager"));
-        Value& js_dataManager = simJSON["DataManager"];
-        Value& js_entities = js_dataManager["entities"];
-        for (Value& entity : js_entities.GetArray())
+        // 0. SimEditor Stuff! ///////////////////////////////////////////////
+        ImGuiWindowFlags window_flags = 0;
+        if (false)        window_flags |= ImGuiWindowFlags_NoTitleBar;
+        if (false)       window_flags |= ImGuiWindowFlags_NoScrollbar;
+        if (true)           window_flags |= ImGuiWindowFlags_MenuBar;
+        if (false)            window_flags |= ImGuiWindowFlags_NoMove;
+        if (false)          window_flags |= ImGuiWindowFlags_NoResize;
+        if (false)        window_flags |= ImGuiWindowFlags_NoCollapse;
+        if (false)             window_flags |= ImGuiWindowFlags_NoNav;
+        if (false)      window_flags |= ImGuiWindowFlags_NoBackground;
+        if (false)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+        //if (false)           p_open = NULL; // Don't pass our bool* to Begin
+
+        if (ImGui::Begin("SimEditor", NULL, window_flags))
         {
-            Value::MemberIterator eName = entity.FindMember("Name");
-            assert(eName != entity.MemberEnd());
-            assert(eName->value.IsString());
-            recurseParamTree(eName->value.GetString(), entity, 0);
-            
+            if (ImGui::BeginMenuBar())
+            {
+                if (ImGui::BeginMenu("Menu"))
+                {
+                    SimEditorMenu_File(simJSON);
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Examples"))
+                {
+                    /*ImGui::MenuItem("Main menu bar", NULL, &show_app_main_menu_bar);
+                    ImGui::MenuItem("Console", NULL, &show_app_console);
+                    ImGui::MenuItem("Log", NULL, &show_app_log);
+                    ImGui::MenuItem("Simple layout", NULL, &show_app_layout);
+                    ImGui::MenuItem("Property editor", NULL, &show_app_property_editor);
+                    ImGui::MenuItem("Long text display", NULL, &show_app_long_text);
+                    ImGui::MenuItem("Auto-resizing window", NULL, &show_app_auto_resize);
+                    ImGui::MenuItem("Constrained-resizing window", NULL, &show_app_constrained_resize);
+                    ImGui::MenuItem("Simple overlay", NULL, &show_app_simple_overlay);
+                    ImGui::MenuItem("Manipulating window titles", NULL, &show_app_window_titles);
+                    ImGui::MenuItem("Custom rendering", NULL, &show_app_custom_rendering);
+                    ImGui::MenuItem("Documents", NULL, &show_app_documents);*/
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Tools"))
+                {
+                    /*ImGui::MenuItem("Metrics", NULL, &show_app_metrics);
+                    ImGui::MenuItem("Style Editor", NULL, &show_app_style_editor);
+                    ImGui::MenuItem("About Dear ImGui", NULL, &show_app_about);*/
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
+
+            for (Value& entity : (simJSON["DataManager"])["entities"].GetArray())
+            {
+                Value::MemberIterator eName = entity.FindMember("Name");
+                assert(eName != entity.MemberEnd());
+                assert(eName->value.IsString());
+                string eNamestr = eName->value.GetString();
+                //eNamestr += "##RootParamTreeRecursionID";
+                eNamestr += "##0";
+                recurseParamTree(eNamestr.c_str(), entity, 0);
+            }
+
+            ImGui::End();
         }
-        ImGui::End();
         ////////////////////////////////////////////////////////////////////////////////
 
 
