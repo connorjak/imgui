@@ -7,10 +7,14 @@
 #include <map>
 
 #include "imgui.h"
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
+
 
 // Only for this: https://github.com/ocornut/imgui/issues/211#issuecomment-339241929
 #include "imgui_internal.h"
+
+//#include "ImGuiFileDialog/ImGuiFileDialog/ImGuiFileDialog.h"
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
+
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -22,11 +26,14 @@ using std::to_string;
 using std::map;
 using namespace rapidjson;
 
-#define MAXIMUM_NESTING_DEPTH 500
-#define MAXIMUM_STRING_LENGTH 10000
+#define MAX_NESTING_DEPTH 500
+#define MAX_STRING_LENGTH 10000
 
 static const char* kTypeNames[] =
 { "Null", "False", "True", "Object", "Array", "String", "Number" };
+
+static const char* paramTypes[] =
+{ "Array", "Double", "String", "Bool"};
 
 static int colors[6][3] = {
     { 255, 255, 255 },  //White
@@ -42,8 +49,119 @@ static int colors[6][3] = {
 
 static bool firstTimeThrough = true;
 static map<ImGuiID, bool*> perID_IsEditable;
+static map<ImGuiID, bool*> perID_IsSaved;
+//string mostRecentFilename = "";
+string mostRecentFilepath = "";
 
-void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
+static void AddParamSection(Value& paramSet, Document& simJSON)
+{
+    static char newParam_name[254];
+    static int newParam_typenum;
+
+    static char newParam_string[MAX_STRING_LENGTH];
+    static double newParam_double;
+    static bool newParam_bool;
+
+    //if (firstTimeThrough)
+    //{
+    //    newParam_typenum = 0;
+    //    //...
+    //}
+
+    ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.08f);
+
+    bool addThisParam = ImGui::Button("+ Add Param"); ImGui::SameLine();
+    ImGui::Text("Type"); ImGui::SameLine();
+    ImGui::Combo("##Type", &newParam_typenum, paramTypes, 4); ImGui::SameLine();
+
+    //static const char* paramTypes[] =
+    //{ "Array", "Double", "String", "Bool"};
+    ImGui::PopItemWidth();
+    ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.15f);
+    ImGui::Text("Key"); ImGui::SameLine();
+    ImGui::InputText("##Key", newParam_name, MAX_STRING_LENGTH); ImGui::SameLine();
+
+    ImGui::PopItemWidth();
+    ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.30f);
+
+    Value newVal;
+
+    ImGui::Text("Value"); ImGui::SameLine();
+    switch (newParam_typenum)
+    {
+    case 0: //Array
+    {
+        ImGui::Text("["); ImGui::SameLine();
+        ImGui::InputText("##Value", newParam_string, MAX_STRING_LENGTH); ImGui::SameLine();
+        ImGui::Text("]");
+
+        //Added to this one for performance
+        if (addThisParam)
+        {
+            Document doc;
+            string toParse = "[" + string(newParam_string) + "]";
+            if (doc.Parse(toParse.c_str()).HasParseError()) {
+                std::cout << "ERROR: Invalid Json structure for array" << std::endl;
+                //TODO better error
+                addThisParam = false;
+
+            }
+            else if (!doc.IsArray())
+            {
+                std::cout << "ERROR: Invalid Json structure for array" << std::endl;
+                addThisParam = false;
+            }
+            else
+            {
+                newVal = doc.GetArray();
+            }
+        }
+    }
+        break;
+    case 1: //Double
+        ImGui::InputDouble("##Value", &newParam_double);
+
+        newVal.SetDouble(newParam_double);
+        break;
+    case 2: //String
+        ImGui::InputText("##Value", newParam_string, MAX_STRING_LENGTH);
+
+        newVal.SetString(newParam_string, strlen(newParam_string));
+        break;
+    case 3: //Bool
+        ImGui::Checkbox("##Value", &newParam_bool);
+
+        newVal.SetBool(newParam_bool);
+        break;
+    default:
+        throw std::logic_error("Impossible new parameter type number.");
+    }
+
+    ImGui::PopItemWidth();
+
+    if (addThisParam)
+    {
+        //Checks
+        assert(paramSet.IsObject());
+        if (strcmp("", newParam_name) == 0)
+            return;
+        for (auto& param : paramSet.GetObject())
+        {
+            if (strcmp(param.name.GetString(), newParam_name) == 0)
+                return;
+        }
+        string tmpstr = newParam_name;
+        const char* tmpcharptr = tmpstr.c_str();
+        Value tmpVal(tmpcharptr, strlen(tmpcharptr), simJSON.GetAllocator());
+        //paramSet.AddMember("Test", newVal, simJSON.GetAllocator());
+        //paramSet.AddMember(Value(newParam_name, strlen(newParam_name)), newVal, simJSON.GetAllocator());
+        paramSet.AddMember(tmpVal, newVal, simJSON.GetAllocator());
+        //TODO the reallocation in here is resetting the paramSet-based IDs. 
+    }
+
+}
+
+void recurseParamTree(const char * nameOfSet, Value& paramSet, Document& simJSON, int depth)
 {
     bool treeActive;
     if (depth == 0)
@@ -56,14 +174,9 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
         treeActive = ImGui::TreeNodeEx(nameOfSet, ImGuiTreeNodeFlags_CollapsingHeader);
     }
 
-    if (treeActive && depth < MAXIMUM_NESTING_DEPTH)
+    //Do this outside the tree structure so it doesn't get passed over
+    if (firstTimeThrough)
     {
-        ImGuiInputTextFlags inputFieldFlags = NULL;
-        ImGui::Indent();
-
-        assert(paramSet.IsObject());
-        
-        
         for (auto& param : paramSet.GetObject())
         {
             ImGui::PushID(&param);
@@ -74,9 +187,63 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
             {
                 perID_IsEditable[currentID] = new bool(false);
             }
-            bool disabled;
+            if (perID_IsSaved.find(currentID) == perID_IsSaved.end())
+            {
+                perID_IsSaved[currentID] = new bool(true);   
+            }
 
-            
+            Value& val = param.value;
+            const char* valTypeName = kTypeNames[val.GetType()];
+
+            // Recurse if object
+            if (valTypeName == "Object")
+            {
+                const char* key = param.name.GetString();
+                //Replace label extension (for better ID differences)
+                string treeLabel = key;
+                string delimiter = "##";
+                string token = treeLabel.substr(0, treeLabel.find(delimiter));
+                treeLabel = token + "##" + to_string(depth);
+                recurseParamTree(treeLabel.c_str(), val, simJSON, depth + 1);
+            }
+
+            ImGui::PopID();
+        }
+        return; //Break out early first time
+    }
+
+
+    if (treeActive && depth < MAX_NESTING_DEPTH)
+    {
+        ImGuiInputTextFlags inputFieldFlags = NULL;
+        ImGui::Indent();
+
+        assert(paramSet.IsObject());
+        
+        AddParamSection(paramSet, simJSON);
+
+        for (auto& param : paramSet.GetObject())
+        {
+            ImGui::PushID(&param);
+            //ImGui::PushID(&(param.value));
+            //ImGui::PushID(param.name.GetString());
+
+            ImGuiID currentID = ImGui::GetID(&param);
+            //ImGuiID currentID = ImGui::GetID(&(param.value));
+            //ImGuiID currentID = ImGui::GetID(param.name.GetString());
+
+            if (perID_IsEditable.find(currentID) == perID_IsEditable.end())
+            {
+                perID_IsEditable[currentID] = new bool(false);
+            }
+            if (perID_IsSaved.find(currentID) == perID_IsSaved.end())
+            {
+                perID_IsSaved[currentID] = new bool(false);
+            }
+            // is parameter locked currently
+            bool paramIsLocked;
+            // Did we push a style color mid-param viewing
+            bool pushedStyleColor = false;
 
             int c = depth % 6;
 
@@ -88,8 +255,8 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
             {
                 ImGui::Checkbox(*perID_IsEditable[currentID] ? " " : "X", perID_IsEditable[currentID]);
                 ImGui::SameLine();
-                disabled = !*perID_IsEditable[currentID];
-                if (disabled)
+                paramIsLocked = !*perID_IsEditable[currentID];
+                if (paramIsLocked)
                 {
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.6f);
@@ -110,7 +277,7 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
 
                     ImGui::Text(sb.GetString());
                 }
-                if (valTypeName == "String")
+                else if (valTypeName == "String")
                 {
                     ImGui::SameLine();
                     const char* currentval = val.GetString();
@@ -119,30 +286,66 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
                     char* outval = new char[length + 1](); //TODO memory leak here!
                     strncpy(outval, currentval, length);
 
-                    ImGui::InputText("(String)", outval, MAXIMUM_STRING_LENGTH, inputFieldFlags);
+                    
+                    if (!*perID_IsSaved[currentID])
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
+                        pushedStyleColor = true;
+                    }
+                    ImGui::InputText("(String)", outval, MAX_STRING_LENGTH, inputFieldFlags);
+
+                    // If it changed
+                    if (strcmp(currentval, outval) != 0)
+                    {
+                        *perID_IsSaved[currentID] = false;
+                    }
+
                     Value outvalJ;
                     outvalJ.SetString(outval, length);
                     paramSet[key] = outvalJ;
                     //delete outval;//TODO ?
                 }
-                if (valTypeName == "Number")
+                else if (valTypeName == "Number")
                 {
                     ImGui::SameLine();
                     double outval = val.GetDouble();
+
+                    if (!*perID_IsSaved[currentID])
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
+                        pushedStyleColor = true;
+                    }
                     ImGui::InputDouble("(Double)", &outval, 1.0, 100.0, "%.6f", inputFieldFlags);
+
+                    if (val.GetDouble() != outval)
+                    {
+                        *perID_IsSaved[currentID] = false;
+                    }
+
                     Value outvalJ(outval);
                     paramSet[key] = outvalJ;
                 }
-                if (valTypeName == "True" || valTypeName == "False")
+                else if (valTypeName == "True" || valTypeName == "False")
                 {
                     ImGui::SameLine();
                     bool outval = val.GetBool();
                     ImGui::Checkbox("", &outval);
+
+                    if (!*perID_IsSaved[currentID])
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
+                        pushedStyleColor = true;
+                    }
+                    if (val.GetBool() != outval)
+                    {
+                        *perID_IsSaved[currentID] = false;
+                    }
+
                     Value outvalJ(outval);
                     paramSet[key] = outvalJ;
 
                 }
-                else // Unimplemented param type
+                else // Unimplemented param type (probably impossible due to this being JSON types?)
                 {
                     ImGui::SameLine();
 
@@ -157,24 +360,30 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
             }
             else // is JSON Object type
             {
-                disabled = false;
+                paramIsLocked = false;
                 //Replace label extension (for better ID differences)
                 string treeLabel = key;
                 string delimiter = "##";
                 string token = treeLabel.substr(0, treeLabel.find(delimiter));
                 treeLabel = token + "##" + to_string(depth);
 
-                recurseParamTree(treeLabel.c_str(), val, depth + 1);
+                recurseParamTree(treeLabel.c_str(), val, simJSON, depth + 1);
             }
 
-            if (disabled)
+            if (paramIsLocked)
             {
                 ImGui::PopItemFlag();
                 ImGui::PopStyleVar();
             }
 
+            if (pushedStyleColor)
+            {
+                ImGui::PopStyleColor();
+            }
+
             ImGui::PopID();
         } // End loop through params in set
+
 
         // End of tree area stuff
         if (depth != 0)
@@ -184,57 +393,164 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, int depth)
         }
         ImGui::Unindent();
     }
-    firstTimeThrough = false;
+    
 }
 
+static void SetAllParamsToSaved()
+{
+    for (auto id : perID_IsSaved)
+    {
+        *(id.second) = true;
+    }
+}
 
-static void SimEditorMenu_File(const Document& editedSim)
+static bool SaveSimFile(const Document& editedSim, string filepath = "")
+{
+    StringBuffer sb;
+    PrettyWriter<StringBuffer> writer(sb);
+    editedSim.Accept(writer);
+
+    if (filepath == "")
+    {
+        if (mostRecentFilepath == "")
+        {
+            return false;
+        }
+        else // use mostRecentFilepath
+        {
+            filepath = mostRecentFilepath;
+        }
+    }
+    else // use filepath
+    {
+        mostRecentFilepath = filepath;
+    }
+    
+
+    std::ofstream of(filepath); //TODO
+    of << sb.GetString();
+    if (!of.good())
+    {
+        throw std::runtime_error("Can't write the JSON string to the file!");
+        return false;
+    }
+    else // success
+    {
+        SetAllParamsToSaved();
+        return true;
+    }
+}
+
+static bool OpenSimFile(Document& simJSON, string filepath)
+{
+    std::stringstream ss;
+    std::string buffer;
+    std::ifstream infs(filepath);
+
+    // check if file can be opened
+    if (infs.is_open()) {
+        while (!infs.eof()) {
+            getline(infs, buffer);
+            ss << buffer;
+            ss << "\n";
+        }
+    }
+    else {
+        std::cout << "Error: File is not opening." << std::endl;
+        return false;
+    }
+
+    std::string buffer_str = ss.str();
+    const char* inputJson = buffer_str.c_str();
+
+    if (simJSON.Parse(inputJson).HasParseError()) {
+        std::cout << "ERROR: Invalid Json file" << std::endl;
+        return false;
+    }
+    assert(simJSON.IsObject());
+    assert(simJSON.HasMember("DataManager"));
+    firstTimeThrough = true;
+}
+
+/////////////////////////////////////////////////////////////////////////
+static void SimEditorMenu(Document& editedSim)
 {
     if (ImGui::BeginMenu("New")) {
         ImGui::MenuItem("(unimplemented)", NULL, false, false);
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Open", "Ctrl+O")) {
-        ImGui::MenuItem("(unimplemented)", NULL, false, false);
-        ImGui::EndMenu();
+
+    if (ImGui::MenuItem("Open..."))
+    {
+        ImGuiFileDialog::Instance()->OpenDialog("OpenDlgKey", "Open Simulation File...", ".json\0.*\0\0", ".");
     }
+
+    // display Save As dialog
+    if (ImGuiFileDialog::Instance()->FileDialog("OpenDlgKey"))
+    {
+        // action if OK
+        if (ImGuiFileDialog::Instance()->IsOk == true)
+        {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+            std::string currentPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            OpenSimFile(editedSim, filePathName);
+            mostRecentFilepath = filePathName;
+        }
+        // close
+        ImGuiFileDialog::Instance()->CloseDialog("OpenDlgKey");
+    }
+
     if (ImGui::BeginMenu("Open Recent"))
     {
         ImGui::MenuItem("(unimplemented)", NULL, false, false);
         ImGui::EndMenu();
     }
+
     if (ImGui::MenuItem("Save", "Ctrl+S")) {
-        StringBuffer sb;
-        PrettyWriter<StringBuffer> writer(sb);
-        editedSim.Accept(writer);
-
-        std::ofstream of("editedSimulation.json"); //TODO
-        of << sb.GetString();
-        if (!of.good()) throw std::runtime_error("Can't write the JSON string to the file!");
-    }
-    if (ImGui::MenuItem("Save As...")) {
-        // open Dialog Simple
-        if (ImGui::Button("Open File Dialog"))
-            ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0", ".");
-
-        // display
-        if (ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey"))
+        bool success = SaveSimFile(editedSim);
+        if (!success)
         {
-            // action if OK
-            if (ImGuiFileDialog::Instance()->IsOk == true)
-            {
-                std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
-                std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-                // action
-            }
-            // close
-            ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+            ImGui::OpenPopup("SaveFailurePopup");
         }
-
-        ImGui::EndMenu();
     }
 
-    ImGui::Separator();
+    if (ImGui::BeginPopup("SaveFailurePopup"))
+    {
+        ImGui::Text("The file failed to Save. Would you like to Save As instead?");
+        if (ImGui::Button("Save As..."))
+        {
+            ImGuiFileDialog::Instance()->OpenDialog("SaveAsDlgKey", "Save Simulation As...", ".json\0.*\0\0", ".");
+        }
+        ImGui::EndPopup();
+    }
+
+
+    if (ImGui::MenuItem("Save As..."))
+    {
+        ImGuiFileDialog::Instance()->OpenDialog("SaveAsDlgKey", "Save Simulation As...", ".json\0.*\0\0", ".");
+    }
+
+    // display Save As dialog
+    if (ImGuiFileDialog::Instance()->FileDialog("SaveAsDlgKey"))
+    {
+        // action if OK
+        if (ImGuiFileDialog::Instance()->IsOk == true)
+        {
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+            std::string currentPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            SaveSimFile(editedSim, filePathName);
+            mostRecentFilepath = filePathName;
+        }
+        // close
+        ImGuiFileDialog::Instance()->CloseDialog("SaveAsDlgKey");
+    }
+
+    /*if (ImGui::MenuItem("Save As...")) {
+        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0", ".");
+        
+    }*/
+
+
     if (ImGui::BeginMenu("Options"))
     {
         ImGui::MenuItem("(unimplemented)", NULL, false, false);

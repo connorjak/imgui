@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\examples",
+    "\\examples\\example_win32_directx11",
+    "\\examples\\example_win32_directx11\\Debug",
+    "\\examples\\example_win32_directx11\\ImGuiFileDialog",
+    "\\examples\\example_win32_directx11\\ImGuiFileDialog\\ImGuiFileDialog"
   ],
-  "SelectedNode": "\\C:\\Users\\conno\\Documents\\Github\\imgui\\examples\\example_glfw_vulkan\\CMakeLists.txt",
+  "SelectedNode": "\\examples\\example_win32_directx11\\ImGuiFileDialog",
   "PreviewInSolutionExplorer": false
 }

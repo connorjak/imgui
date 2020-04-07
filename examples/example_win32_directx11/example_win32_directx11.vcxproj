@@ -149,6 +149,9 @@
     <ClInclude Include="..\..\imgui_internal.h" />
     <ClInclude Include="..\imgui_impl_dx11.h" />
     <ClInclude Include="..\imgui_impl_win32.h" />
+    <ClInclude Include="ImGuiFileDialog\dirent.h" />
+    <ClInclude Include="ImGuiFileDialog\ImGuiFileDialog.h" />
+    <ClInclude Include="ImGuiFileDialog\ImGuiFileDialogConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\imgui.cpp" />
@@ -157,6 +160,7 @@
     <ClCompile Include="..\..\imgui_widgets.cpp" />
     <ClCompile Include="..\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\imgui_impl_win32.cpp" />
+    <ClCompile Include="ImGuiFileDialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

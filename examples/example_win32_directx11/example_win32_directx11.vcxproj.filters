@@ -24,6 +24,9 @@
     <ClInclude Include="..\imgui_impl_dx11.h">
       <Filter>sources</Filter>
     </ClInclude>
+    <ClInclude Include="ImGuiFileDialog\dirent.h" />
+    <ClInclude Include="ImGuiFileDialog\ImGuiFileDialog.h" />
+    <ClInclude Include="ImGuiFileDialog\ImGuiFileDialogConfig.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\imgui.cpp">
@@ -47,6 +50,7 @@
     <ClCompile Include="..\..\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiFileDialog\ImGuiFileDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.txt" />

@@ -58,7 +58,7 @@ int main(int, char**)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
@@ -72,32 +72,9 @@ int main(int, char**)
 
     ////////////////////////////////////////////////////////////////// IMPORT JSON
     //converts json files to c string 
-    std::stringstream ss;
-    std::string buffer;
-    std::ifstream infs("simulation.json");
-
-    // check if file can be opened
-    if (infs.is_open()) {
-        while (!infs.eof()) {
-            getline(infs, buffer);
-            ss << buffer;
-            ss << "\n";
-        }
-    }
-    else {
-        std::cout << "Error: File is not opening." << std::endl;
-    }
-
-    std::string buffer_str = ss.str();
-    const char* inputJson = buffer_str.c_str();
 
     Document simJSON;
-    if (simJSON.Parse(inputJson).HasParseError()) {
-        std::cout << "ERROR: Invalid Json file" << std::endl;
-        return false;
-    }
-    assert(simJSON.IsObject());
-    assert(simJSON.HasMember("DataManager"));
+    OpenSimFile(simJSON,"simulation.json");
 
 
     ////////////////////////////////////////////////////////////////// IMPORT JSON
@@ -118,7 +95,7 @@ int main(int, char**)
     //IM_ASSERT(font != NULL);
 
     // Our state
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -145,6 +122,27 @@ int main(int, char**)
         ImGui::NewFrame();
 
         // 0. SimEditor Stuff! ///////////////////////////////////////////////
+
+
+        //// open Dialog Simple
+        ///*if (ImGui::Button("Open File Dialog"))*/
+        //ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".json\0.*\0\0", ".");
+
+        //// display
+        //if (ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey"))
+        //{
+        //    // action if OK
+        //    if (ImGuiFileDialog::Instance()->IsOk == true)
+        //    {
+        //        std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
+        //        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+        //        // action
+        //    }
+        //    // close
+        //    ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
+        //}
+
+
         ImGuiWindowFlags window_flags = 0;
         if (false)        window_flags |= ImGuiWindowFlags_NoTitleBar;
         if (false)       window_flags |= ImGuiWindowFlags_NoScrollbar;
@@ -157,40 +155,41 @@ int main(int, char**)
         if (false)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
         //if (false)           p_open = NULL; // Don't pass our bool* to Begin
 
-        if (ImGui::Begin("SimEditor", NULL, window_flags))
+        string windowTitle = "SimEditor";
+
+        if (mostRecentFilepath == "")
+        {
+            windowTitle += " - Untitled Sim Config###SimEditorWindow";
+        }
+        else
+        {
+            windowTitle += " - " + mostRecentFilepath + "###SimEditorWindow";
+        }
+
+        if (ImGui::Begin(windowTitle.c_str(), NULL, window_flags))
         {
             if (ImGui::BeginMenuBar())
             {
-                if (ImGui::BeginMenu("Menu"))
+                /*if (ImGui::BeginMenu("Menu"))
                 {
-                    SimEditorMenu_File(simJSON);
+                    SimEditorMenu(simJSON);
                     ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Examples"))
-                {
-                    /*ImGui::MenuItem("Main menu bar", NULL, &show_app_main_menu_bar);
-                    ImGui::MenuItem("Console", NULL, &show_app_console);
-                    ImGui::MenuItem("Log", NULL, &show_app_log);
-                    ImGui::MenuItem("Simple layout", NULL, &show_app_layout);
-                    ImGui::MenuItem("Property editor", NULL, &show_app_property_editor);
-                    ImGui::MenuItem("Long text display", NULL, &show_app_long_text);
-                    ImGui::MenuItem("Auto-resizing window", NULL, &show_app_auto_resize);
-                    ImGui::MenuItem("Constrained-resizing window", NULL, &show_app_constrained_resize);
-                    ImGui::MenuItem("Simple overlay", NULL, &show_app_simple_overlay);
-                    ImGui::MenuItem("Manipulating window titles", NULL, &show_app_window_titles);
-                    ImGui::MenuItem("Custom rendering", NULL, &show_app_custom_rendering);
-                    ImGui::MenuItem("Documents", NULL, &show_app_documents);*/
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Tools"))
-                {
-                    /*ImGui::MenuItem("Metrics", NULL, &show_app_metrics);
-                    ImGui::MenuItem("Style Editor", NULL, &show_app_style_editor);
-                    ImGui::MenuItem("About Dear ImGui", NULL, &show_app_about);*/
-                    ImGui::EndMenu();
-                }
+                }*/
+                SimEditorMenu(simJSON);
+
+                
                 ImGui::EndMenuBar();
             }
+
+            ImGui::Separator();
+            ImGui::Text("Systems");
+            ImGui::Separator();
+            ImGui::TreeNodeEx("System1", ImGuiTreeNodeFlags_CollapsingHeader);
+            ImGui::TreeNodeEx("System2", ImGuiTreeNodeFlags_CollapsingHeader);
+
+            ImGui::Separator();
+            ImGui::Text("Entities");
+            ImGui::Separator();
 
             for (Value& entity : (simJSON["DataManager"])["entities"].GetArray())
             {
@@ -200,8 +199,9 @@ int main(int, char**)
                 string eNamestr = eName->value.GetString();
                 //eNamestr += "##RootParamTreeRecursionID";
                 eNamestr += "##0";
-                recurseParamTree(eNamestr.c_str(), entity, 0);
+                recurseParamTree(eNamestr.c_str(), entity, simJSON, 0);
             }
+            firstTimeThrough = false;
 
             ImGui::End();
         }

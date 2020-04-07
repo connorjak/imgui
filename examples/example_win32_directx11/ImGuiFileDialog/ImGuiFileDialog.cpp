@@ -24,9 +24,14 @@ SOFTWARE.
 
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
-
+//TODO BREAKING fix this includes stuff
+#include "dirent.h"
+#define PATH_SEP '\\'
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
 #ifdef WIN32
-#include <dirent.h>
+//#include <dirent.h>
 #define PATH_SEP '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 260
