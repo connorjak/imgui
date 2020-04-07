@@ -30,7 +30,7 @@
                 "Systems": [
                     "Spicy"
                 ],
-                "Loadable_Mesh": false,
+                "Loadable_Mesh": true,
                 "Generate_Collider": false,
                 "Generate_Collider2": false,
                 "Generate_Collider3": false,

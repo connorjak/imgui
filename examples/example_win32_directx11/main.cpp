@@ -18,6 +18,7 @@
 #include <sstream>
 
 #include "ParamUI.h"
+#include "SimEditorMenus.h"
 
 using namespace rapidjson;
 
@@ -155,16 +156,31 @@ int main(int, char**)
         if (false)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
         //if (false)           p_open = NULL; // Don't pass our bool* to Begin
 
-        string windowTitle = "SimEditor";
+        string windowTitle = "";
+        bool unsavedFlag = false;
+
+        for (auto item : perID_IsSaved)
+        {
+            if (*(item.second) == false)
+                unsavedFlag = true;
+            //TODO count of unsaved items?
+        }
+        if (unsavedFlag)
+        {
+            windowTitle += "* ";
+        }
+
+        windowTitle += "SimEditor - ";
 
         if (mostRecentFilepath == "")
         {
-            windowTitle += " - Untitled Sim Config###SimEditorWindow";
+            windowTitle += "Untitled Sim Config###SimEditorWindow";
         }
         else
         {
-            windowTitle += " - " + mostRecentFilepath + "###SimEditorWindow";
+            windowTitle += mostRecentFilepath + "###SimEditorWindow";
         }
+
 
         if (ImGui::Begin(windowTitle.c_str(), NULL, window_flags))
         {

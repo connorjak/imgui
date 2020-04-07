@@ -53,6 +53,19 @@ static map<ImGuiID, bool*> perID_IsSaved;
 //string mostRecentFilename = "";
 string mostRecentFilepath = "";
 
+//////////////////////////////////////////
+
+// User must PopStyleColor!
+static bool ColorIfUnsaved(ImGuiID currentID)
+{
+    if (!*perID_IsSaved[currentID])
+    {
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
+        return true;
+    }
+    return false;
+}
+
 static void AddParamSection(Value& paramSet, Document& simJSON)
 {
     static char newParam_name[254];
@@ -268,14 +281,116 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, Document& simJSON
                 if (valTypeName == "Array")
                 {
                     ImGui::SameLine();
+                    bool fallbackRendering = false;
+                    string arrayValType = "not initialized";
 
-                    //TODO better handling of this than just printing JSON
 
-                    StringBuffer sb;
-                    PrettyWriter<StringBuffer> writer(sb);
-                    val.Accept(writer);
+                    if (!val.IsArray()) {fallbackRendering = true;}
+                    else if(strcmp(key,"Systems") == 0) { fallbackRendering = true; }
+                    else if(val.Size() == 0) { fallbackRendering = true; }
+                    else
+                    {
+                        if(!val.GetArray()[0].IsString()) { fallbackRendering = true; }
+                        else
+                        {
+                            arrayValType = val.GetArray()[0].GetString();
+                        }
+                    }
 
-                    ImGui::Text(sb.GetString());
+                    if (!fallbackRendering)
+                    {
+                        if (arrayValType == "doubleV2")
+                        {
+                            //TODO check length of array
+                            ImGui::SameLine();
+                            double outval[2] = { val.GetArray()[1].GetDouble(),
+                                val.GetArray()[2].GetDouble() };
+
+                            pushedStyleColor = ColorIfUnsaved(currentID);
+                            ImGui::InputDouble3("(DoubleV2)", outval);
+
+                            if (val.GetArray()[1].GetDouble() != outval[0] ||
+                                val.GetArray()[2].GetDouble() != outval[1])
+                            {
+                                *perID_IsSaved[currentID] = false;
+                            }
+
+                            Value outvalJ(kArrayType);
+                            outvalJ.PushBack("doubleV2", simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[0], simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[1], simJSON.GetAllocator());
+
+                            paramSet[key] = outvalJ;
+                        }
+                        else if (arrayValType == "doubleV3")
+                        {
+                            //TODO check length of array
+                            ImGui::SameLine();
+                            double outval[3] = { val.GetArray()[1].GetDouble(),
+                                val.GetArray()[2].GetDouble(),
+                                val.GetArray()[3].GetDouble() };
+
+                            pushedStyleColor = ColorIfUnsaved(currentID);
+                            ImGui::InputDouble3("(DoubleV3)", outval);
+
+                            if (val.GetArray()[1].GetDouble() != outval[0] ||
+                                val.GetArray()[2].GetDouble() != outval[1] ||
+                                val.GetArray()[3].GetDouble() != outval[2])
+                            {
+                                *perID_IsSaved[currentID] = false;
+                            }
+
+                            Value outvalJ(kArrayType);
+                            outvalJ.PushBack("doubleV3", simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[0], simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[1], simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[2], simJSON.GetAllocator());
+
+                            paramSet[key] = outvalJ;
+                        }
+                        else if (arrayValType == "doubleV4")
+                        {
+                            //TODO check length of array
+                            ImGui::SameLine();
+                            double outval[4] = { val.GetArray()[1].GetDouble(),
+                                val.GetArray()[2].GetDouble(),
+                                val.GetArray()[3].GetDouble(),
+                                val.GetArray()[4].GetDouble() };
+
+                            pushedStyleColor = ColorIfUnsaved(currentID);
+                            ImGui::InputDouble4("(DoubleV4)", outval);
+
+                            if (val.GetArray()[1].GetDouble() != outval[0] ||
+                                val.GetArray()[2].GetDouble() != outval[1] ||
+                                val.GetArray()[3].GetDouble() != outval[2] ||
+                                val.GetArray()[4].GetDouble() != outval[3])
+                            {
+                                *perID_IsSaved[currentID] = false;
+                            }
+
+                            Value outvalJ(kArrayType);
+                            outvalJ.PushBack("doubleV4", simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[0], simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[1], simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[2], simJSON.GetAllocator());
+                            outvalJ.PushBack(outval[3], simJSON.GetAllocator());
+
+                            paramSet[key] = outvalJ;
+                        }
+                        else
+                        {
+                            fallbackRendering = true;
+                        }
+                    }
+
+                    if (fallbackRendering)
+                    {
+                        StringBuffer sb;
+                        PrettyWriter<StringBuffer> writer(sb);
+                        val.Accept(writer);
+
+                        ImGui::Text(sb.GetString());
+                    }
                 }
                 else if (valTypeName == "String")
                 {
@@ -287,11 +402,7 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, Document& simJSON
                     strncpy(outval, currentval, length);
 
                     
-                    if (!*perID_IsSaved[currentID])
-                    {
-                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
-                        pushedStyleColor = true;
-                    }
+                    pushedStyleColor = ColorIfUnsaved(currentID);
                     ImGui::InputText("(String)", outval, MAX_STRING_LENGTH, inputFieldFlags);
 
                     // If it changed
@@ -310,11 +421,7 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, Document& simJSON
                     ImGui::SameLine();
                     double outval = val.GetDouble();
 
-                    if (!*perID_IsSaved[currentID])
-                    {
-                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
-                        pushedStyleColor = true;
-                    }
+                    pushedStyleColor = ColorIfUnsaved(currentID);
                     ImGui::InputDouble("(Double)", &outval, 1.0, 100.0, "%.6f", inputFieldFlags);
 
                     if (val.GetDouble() != outval)
@@ -331,11 +438,7 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, Document& simJSON
                     bool outval = val.GetBool();
                     ImGui::Checkbox("", &outval);
 
-                    if (!*perID_IsSaved[currentID])
-                    {
-                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(255 / 255.0f, 225 / 255.0f, 25 / 255.0f, 70 / 255.0f));
-                        pushedStyleColor = true;
-                    }
+                    pushedStyleColor = ColorIfUnsaved(currentID);
                     if (val.GetBool() != outval)
                     {
                         *perID_IsSaved[currentID] = false;
@@ -395,255 +498,3 @@ void recurseParamTree(const char * nameOfSet, Value& paramSet, Document& simJSON
     }
     
 }
-
-static void SetAllParamsToSaved()
-{
-    for (auto id : perID_IsSaved)
-    {
-        *(id.second) = true;
-    }
-}
-
-static bool SaveSimFile(const Document& editedSim, string filepath = "")
-{
-    StringBuffer sb;
-    PrettyWriter<StringBuffer> writer(sb);
-    editedSim.Accept(writer);
-
-    if (filepath == "")
-    {
-        if (mostRecentFilepath == "")
-        {
-            return false;
-        }
-        else // use mostRecentFilepath
-        {
-            filepath = mostRecentFilepath;
-        }
-    }
-    else // use filepath
-    {
-        mostRecentFilepath = filepath;
-    }
-    
-
-    std::ofstream of(filepath); //TODO
-    of << sb.GetString();
-    if (!of.good())
-    {
-        throw std::runtime_error("Can't write the JSON string to the file!");
-        return false;
-    }
-    else // success
-    {
-        SetAllParamsToSaved();
-        return true;
-    }
-}
-
-static bool OpenSimFile(Document& simJSON, string filepath)
-{
-    std::stringstream ss;
-    std::string buffer;
-    std::ifstream infs(filepath);
-
-    // check if file can be opened
-    if (infs.is_open()) {
-        while (!infs.eof()) {
-            getline(infs, buffer);
-            ss << buffer;
-            ss << "\n";
-        }
-    }
-    else {
-        std::cout << "Error: File is not opening." << std::endl;
-        return false;
-    }
-
-    std::string buffer_str = ss.str();
-    const char* inputJson = buffer_str.c_str();
-
-    if (simJSON.Parse(inputJson).HasParseError()) {
-        std::cout << "ERROR: Invalid Json file" << std::endl;
-        return false;
-    }
-    assert(simJSON.IsObject());
-    assert(simJSON.HasMember("DataManager"));
-    firstTimeThrough = true;
-}
-
-/////////////////////////////////////////////////////////////////////////
-static void SimEditorMenu(Document& editedSim)
-{
-    if (ImGui::BeginMenu("New")) {
-        ImGui::MenuItem("(unimplemented)", NULL, false, false);
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::MenuItem("Open..."))
-    {
-        ImGuiFileDialog::Instance()->OpenDialog("OpenDlgKey", "Open Simulation File...", ".json\0.*\0\0", ".");
-    }
-
-    // display Save As dialog
-    if (ImGuiFileDialog::Instance()->FileDialog("OpenDlgKey"))
-    {
-        // action if OK
-        if (ImGuiFileDialog::Instance()->IsOk == true)
-        {
-            std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
-            std::string currentPath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            OpenSimFile(editedSim, filePathName);
-            mostRecentFilepath = filePathName;
-        }
-        // close
-        ImGuiFileDialog::Instance()->CloseDialog("OpenDlgKey");
-    }
-
-    if (ImGui::BeginMenu("Open Recent"))
-    {
-        ImGui::MenuItem("(unimplemented)", NULL, false, false);
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::MenuItem("Save", "Ctrl+S")) {
-        bool success = SaveSimFile(editedSim);
-        if (!success)
-        {
-            ImGui::OpenPopup("SaveFailurePopup");
-        }
-    }
-
-    if (ImGui::BeginPopup("SaveFailurePopup"))
-    {
-        ImGui::Text("The file failed to Save. Would you like to Save As instead?");
-        if (ImGui::Button("Save As..."))
-        {
-            ImGuiFileDialog::Instance()->OpenDialog("SaveAsDlgKey", "Save Simulation As...", ".json\0.*\0\0", ".");
-        }
-        ImGui::EndPopup();
-    }
-
-
-    if (ImGui::MenuItem("Save As..."))
-    {
-        ImGuiFileDialog::Instance()->OpenDialog("SaveAsDlgKey", "Save Simulation As...", ".json\0.*\0\0", ".");
-    }
-
-    // display Save As dialog
-    if (ImGuiFileDialog::Instance()->FileDialog("SaveAsDlgKey"))
-    {
-        // action if OK
-        if (ImGuiFileDialog::Instance()->IsOk == true)
-        {
-            std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
-            std::string currentPath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            SaveSimFile(editedSim, filePathName);
-            mostRecentFilepath = filePathName;
-        }
-        // close
-        ImGuiFileDialog::Instance()->CloseDialog("SaveAsDlgKey");
-    }
-
-    /*if (ImGui::MenuItem("Save As...")) {
-        ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp\0.h\0.hpp\0\0", ".");
-        
-    }*/
-
-
-    if (ImGui::BeginMenu("Options"))
-    {
-        ImGui::MenuItem("(unimplemented)", NULL, false, false);
-        
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::MenuItem("Quit", "Alt+F4")) {}
-}
-
-
-
-
-
-
-
-
-
-
-////(Copy pasted)
-//// Note that shortcuts are currently provided for display only (future version will add flags to BeginMenu to process shortcuts)
-//static void ShowExampleMenuFile()
-//{
-//    ImGui::MenuItem("(dummy menu)", NULL, false, false);
-//    if (ImGui::MenuItem("New")) {}
-//    if (ImGui::MenuItem("Open", "Ctrl+O")) {}
-//    if (ImGui::BeginMenu("Open Recent"))
-//    {
-//        ImGui::MenuItem("fish_hat.c");
-//        ImGui::MenuItem("fish_hat.inl");
-//        ImGui::MenuItem("fish_hat.h");
-//        if (ImGui::BeginMenu("More.."))
-//        {
-//            ImGui::MenuItem("Hello");
-//            ImGui::MenuItem("Sailor");
-//            if (ImGui::BeginMenu("Recurse.."))
-//            {
-//                ShowExampleMenuFile();
-//                ImGui::EndMenu();
-//            }
-//            ImGui::EndMenu();
-//        }
-//        ImGui::EndMenu();
-//    }
-//    if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-//    if (ImGui::MenuItem("Save As..")) {}
-//
-//    ImGui::Separator();
-//    if (ImGui::BeginMenu("Options"))
-//    {
-//        static bool enabled = true;
-//        ImGui::MenuItem("Enabled", "", &enabled);
-//        ImGui::BeginChild("child", ImVec2(0, 60), true);
-//        for (int i = 0; i < 10; i++)
-//            ImGui::Text("Scrolling Text %d", i);
-//        ImGui::EndChild();
-//        static float f = 0.5f;
-//        static int n = 0;
-//        ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
-//        ImGui::InputFloat("Input", &f, 0.1f);
-//        ImGui::Combo("Combo", &n, "Yes\0No\0Maybe\0\0");
-//        ImGui::EndMenu();
-//    }
-//
-//    if (ImGui::BeginMenu("Colors"))
-//    {
-//        float sz = ImGui::GetTextLineHeight();
-//        for (int i = 0; i < ImGuiCol_COUNT; i++)
-//        {
-//            const char* name = ImGui::GetStyleColorName((ImGuiCol)i);
-//            ImVec2 p = ImGui::GetCursorScreenPos();
-//            ImGui::GetWindowDrawList()->AddRectFilled(p, ImVec2(p.x + sz, p.y + sz), ImGui::GetColorU32((ImGuiCol)i));
-//            ImGui::Dummy(ImVec2(sz, sz));
-//            ImGui::SameLine();
-//            ImGui::MenuItem(name);
-//        }
-//        ImGui::EndMenu();
-//    }
-//
-//    // Here we demonstrate appending again to the "Options" menu (which we already created above)
-//    // Of course in this demo it is a little bit silly that this function calls BeginMenu("Options") twice.
-//    // In a real code-base using it would make senses to use this feature from very different code locations.
-//    if (ImGui::BeginMenu("Options")) // <-- Append!
-//    {
-//        static bool b = true;
-//        ImGui::Checkbox("SomeOption", &b);
-//        ImGui::EndMenu();
-//    }
-//
-//    if (ImGui::BeginMenu("Disabled", false)) // Disabled
-//    {
-//        IM_ASSERT(0);
-//    }
-//    if (ImGui::MenuItem("Checked", NULL, true)) {}
-//    if (ImGui::MenuItem("Quit", "Alt+F4")) {}
-//}

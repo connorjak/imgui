@@ -509,6 +509,9 @@ namespace ImGui
     IMGUI_API bool          InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputInt4(const char* label, int v[4], ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputDouble(const char* label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+    IMGUI_API bool          InputDouble2(const char* label, double v[2], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+    IMGUI_API bool          InputDouble3(const char* label, double v[3], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+    IMGUI_API bool          InputDouble4(const char* label, double v[4], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 

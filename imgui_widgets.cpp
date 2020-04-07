@@ -3098,6 +3098,21 @@ bool ImGui::InputDouble(const char* label, double* v, double step, double step_f
     return InputScalar(label, ImGuiDataType_Double, (void*)v, (void*)(step>0.0 ? &step : NULL), (void*)(step_fast>0.0 ? &step_fast : NULL), format, flags);
 }
 
+bool ImGui::InputDouble2(const char* label, double v[2], const char* format, ImGuiInputTextFlags flags)
+{
+    return InputScalarN(label, ImGuiDataType_Double, v, 2, NULL, NULL, format, flags);
+}
+
+bool ImGui::InputDouble3(const char* label, double v[3], const char* format, ImGuiInputTextFlags flags)
+{
+    return InputScalarN(label, ImGuiDataType_Double, v, 3, NULL, NULL, format, flags);
+}
+
+bool ImGui::InputDouble4(const char* label, double v[4], const char* format, ImGuiInputTextFlags flags)
+{
+    return InputScalarN(label, ImGuiDataType_Double, v, 4, NULL, NULL, format, flags);
+}
+
 //-------------------------------------------------------------------------
 // [SECTION] Widgets: InputText, InputTextMultiline, InputTextWithHint
 //-------------------------------------------------------------------------
