@@ -95,16 +95,15 @@
                             },
                             "observer": "EARTH"
                         }
-                    }
+                    },
+                    "sadawdjas": "fawwad"
                 }
             },
             {
                 "Name": "Mercury",
                 "Type": "Object ",
                 "Systems": [
-                    "Spicy",
-                    "TestSystemadasdsadada",
-                        "akmdkl;awmdlkawmds"
+                    "Spicy"
                 ],
                 "Loadable_Mesh": false,
                 "Generate_Collider": false,

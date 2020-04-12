@@ -1,0 +1,21 @@
+{
+    "SystemManager": {
+        "Systems": [
+            {
+                "Nametag": "oajnsof",
+                "Source": "sadijas",
+                "Type": "sad",
+                "Inst_Parameters": {}
+            }
+        ]
+    },
+    "DataManager": {
+        "entities": [
+            {
+                "Name": "fweasfasefsa",
+                "Type": "safafaw",
+                "Parameters": {}
+            }
+        ]
+    }
+}

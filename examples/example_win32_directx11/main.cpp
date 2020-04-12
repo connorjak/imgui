@@ -124,26 +124,6 @@ int main(int, char**)
 
         // 0. SimEditor Stuff! ///////////////////////////////////////////////
 
-
-        //// open Dialog Simple
-        ///*if (ImGui::Button("Open File Dialog"))*/
-        //ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".json\0.*\0\0", ".");
-
-        //// display
-        //if (ImGuiFileDialog::Instance()->FileDialog("ChooseFileDlgKey"))
-        //{
-        //    // action if OK
-        //    if (ImGuiFileDialog::Instance()->IsOk == true)
-        //    {
-        //        std::string filePathName = ImGuiFileDialog::Instance()->GetFilepathName();
-        //        std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-        //        // action
-        //    }
-        //    // close
-        //    ImGuiFileDialog::Instance()->CloseDialog("ChooseFileDlgKey");
-        //}
-
-
         ImGuiWindowFlags window_flags = 0;
         if (false)        window_flags |= ImGuiWindowFlags_NoTitleBar;
         if (false)       window_flags |= ImGuiWindowFlags_NoScrollbar;
@@ -157,15 +137,7 @@ int main(int, char**)
         //if (false)           p_open = NULL; // Don't pass our bool* to Begin
 
         string windowTitle = "";
-        bool unsavedFlag = false;
-
-        for (auto item : perID_IsSaved)
-        {
-            if (*(item.second) == false)
-                unsavedFlag = true;
-            //TODO count of unsaved items?
-        }
-        if (unsavedFlag)
+        if (IsAnythingUnsaved())
         {
             windowTitle += "* ";
         }
@@ -186,29 +158,61 @@ int main(int, char**)
         {
             if (ImGui::BeginMenuBar())
             {
-                /*if (ImGui::BeginMenu("Menu"))
-                {
-                    SimEditorMenu(simJSON);
-                    ImGui::EndMenu();
-                }*/
                 SimEditorMenu(simJSON);
 
                 
                 ImGui::EndMenuBar();
             }
 
+            
+
             ImGui::Separator();
             ImGui::Text("Systems");
+            AddSystemsSection(simJSON["SystemManager"]["Systems"], simJSON);
             ImGui::Separator();
-            ImGui::TreeNodeEx("System1", ImGuiTreeNodeFlags_CollapsingHeader);
-            ImGui::TreeNodeEx("System2", ImGuiTreeNodeFlags_CollapsingHeader);
+
+            ImVec4 newCol = ImVecFromIntColor(colors[2]);
+            newCol.w = 180 / 255.0f;
+
+            ImGui::PushStyleColor(ImGuiCol_Header, newCol);
+
+
+            for (Value& system : (simJSON["SystemManager"])["Systems"].GetArray())
+            {
+                ImGui::PushID(&system);
+                Value::MemberIterator sName = system.FindMember("Nametag");
+                //TODO replace asserts with better handling
+                assert(sName != system.MemberEnd());
+                assert(sName->value.IsString());
+                string sNamestr = sName->value.GetString();
+
+                auto sBegin = cachedSysNametags.begin();
+                auto sEnd = cachedSysNametags.begin();
+
+                if (std::find(sBegin, sEnd, sNamestr) == sEnd)
+                {
+                    cachedSysNametags.push_back(sNamestr);
+                }
+
+                //sNamestr += "##RootParamTreeRecursionID";
+                sNamestr += "##0";
+                recurseParamTree(sNamestr.c_str(), system, simJSON, 0);
+                ImGui::PopID();
+            }
+
+            ImGui::PopStyleColor();
+
+            ImGui::Separator();
 
             ImGui::Separator();
             ImGui::Text("Entities");
+            AddEntitySection(simJSON["DataManager"]["entities"], simJSON);
             ImGui::Separator();
+
 
             for (Value& entity : (simJSON["DataManager"])["entities"].GetArray())
             {
+                ImGui::PushID(&entity);
                 Value::MemberIterator eName = entity.FindMember("Name");
                 assert(eName != entity.MemberEnd());
                 assert(eName->value.IsString());
@@ -216,6 +220,7 @@ int main(int, char**)
                 //eNamestr += "##RootParamTreeRecursionID";
                 eNamestr += "##0";
                 recurseParamTree(eNamestr.c_str(), entity, simJSON, 0);
+                ImGui::PopID();
             }
             firstTimeThrough = false;
 

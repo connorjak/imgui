@@ -1,0 +1,38 @@
+{
+    "SystemManager": {
+        "Systems": [
+            {
+                "Nametag": "oajnsof",
+                "Source": "sadijas",
+                "Type": "sad",
+                "Inst_Parameters": {}
+            }
+        ]
+    },
+    "DataManager": {
+        "entities": [
+            {
+                "Name": "fweasfasefsa",
+                "Type": "safafaw",
+                "Parameters": {}
+            },
+            {
+                "Name": "fweasfasefsas",
+                "Type": "safafaw",
+                "Parameters": {}
+            },
+            {
+                "Name": "spacesuit",
+                "Type": "safafaw",
+                "Parameters": {
+                    "Position": [
+                        "doubleV3",
+                        100.0,
+                        0.0,
+                        0.0
+                    ]
+                }
+            }
+        ]
+    }
+}

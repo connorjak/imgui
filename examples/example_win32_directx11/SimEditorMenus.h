@@ -75,6 +75,7 @@ static bool OpenSimFile(Document& simJSON, string filepath)
     }
     assert(simJSON.IsObject());
     assert(simJSON.HasMember("DataManager"));
+    assert(simJSON.HasMember("SystemManager"));
     firstTimeThrough = true;
     return true; //success
 }
@@ -82,9 +83,52 @@ static bool OpenSimFile(Document& simJSON, string filepath)
 /////////////////////////////////////////////////////////////////////////
 static void SimEditorMenu(Document& editedSim)
 {
-    if (ImGui::BeginMenu("New")) {
-        ImGui::MenuItem("(unimplemented)", NULL, false, false);
+    /*if (ImGui::BeginMenu("New")) {
+        if (ImGui::MenuItem("Sim Config")) {
+            if (IsAnythingUnsaved())
+            {
+                ImGui::OpenPopup("UnsavedChangesPopup");
+            }
+            else
+            {
+                OpenSimFile(editedSim, "empty.json");
+            }
+        }
+        
         ImGui::EndMenu();
+    }*/
+
+    if (ImGui::MenuItem("New")) {
+        
+        if (IsAnythingUnsaved())
+        {
+            ImGui::OpenPopup("UnsavedChangesPopup");
+        }
+        else
+        {
+            OpenSimFile(editedSim, "empty.json");
+            mostRecentFilepath = "";
+        }
+    }
+
+    if (ImGui::BeginPopup("UnsavedChangesPopup"))
+    {
+        ImGui::Text("You are about to discard unsaved changes. Would you like to Save?");
+        if (ImGui::Button("Save"))
+        {
+            bool success = SaveSimFile(editedSim);
+            if (!success)
+            {
+                ImGui::OpenPopup("SaveFailurePopup");
+            }
+            else
+            {
+                ImGui::CloseCurrentPopup();
+            }
+        }
+
+        ImGui::EndPopup();
+        
     }
 
     if (ImGui::MenuItem("Open..."))

@@ -32,9 +32,9 @@
                 ],
                 "Loadable_Mesh": false,
                 "Generate_Collider": false,
-                "Generate_Collider2": false,
-                "Generate_Collider3": false,
-                "Generate_Collider4": false,
+                "Generate_Collider2": true,
+                "Generate_Collider3": true,
+                "Generate_Collider4": true,
                 "Generate_Collider5": false,
                 "Mesh_Path": "StaticMesh'/Game/Solar_System/Sun/Solar_System_Models_Sun.Solar_System_Models_Sun'",
                 "Scale": 1000000.0,
@@ -96,15 +96,37 @@
                             "observer": "EARTH"
                         }
                     }
-                }
+                },
+                "WhereThaBootyAt": [
+                    "doubleV3",
+                    13441.0,
+                    0.0,
+                    0.0
+                ],
+                "WhereThaBootyAt2": [
+                    "doubleV3",
+                    127.0,
+                    0.0,
+                    0.0
+                ],
+                "WhereThaBootyA3": [
+                    "doubleV3",
+                    34.0,
+                    0.0,
+                    0.0
+                ],
+                "WhereThaBootyA23": [
+                    "doubleV3",
+                    34.0,
+                    0.0,
+                    0.0
+                ]
             },
             {
                 "Name": "Mercury",
                 "Type": "Object ",
                 "Systems": [
-                    "Spicy",
-                    "TestSystemadasdsadada",
-                        "akmdkl;awmdlkawmds"
+                    "Spicy"
                 ],
                 "Loadable_Mesh": false,
                 "Generate_Collider": false,

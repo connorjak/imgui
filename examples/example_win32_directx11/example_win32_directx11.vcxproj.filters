@@ -27,6 +27,7 @@
     <ClInclude Include="ImGuiFileDialog\dirent.h" />
     <ClInclude Include="ImGuiFileDialog\ImGuiFileDialog.h" />
     <ClInclude Include="ImGuiFileDialog\ImGuiFileDialogConfig.h" />
+    <ClInclude Include="SimEditorMenus.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\imgui.cpp">

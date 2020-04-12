@@ -26,15 +26,14 @@
         "entities": [
             {
                 "Name": "Sun",
-                "Type": "Object",
+                "Type": "Object ",
                 "Systems": [
                     "Spicy"
                 ],
-                "Loadable_Mesh": true,
+                "Loadable_Mesh": false,
                 "Generate_Collider": false,
                 "Generate_Collider2": false,
                 "Generate_Collider3": false,
-                "Generate_Collider4": false,
                 "Generate_Collider5": false,
                 "Mesh_Path": "StaticMesh'/Game/Solar_System/Sun/Solar_System_Models_Sun.Solar_System_Models_Sun'",
                 "Scale": 1000000.0,
@@ -100,15 +99,15 @@
             },
             {
                 "Name": "Mercury",
-                "Type": "Object",
+                "Type": "Object ",
                 "Systems": [
                     "Spicy"
                 ],
                 "Loadable_Mesh": false,
                 "Generate_Collider": false,
                 "Mesh_Path": "StaticMesh'/Game/Solar_System/Mercury/Solar_System_Models_Mercury.Solar_System_Models_Mercury'",
-                "Scale": 1000000,
-                "Mass": 1,
+                "Scale": 1000000.0,
+                "Mass": 1.0,
                 "RenderFar": true,
                 "Parameters": {
                     "ControlledObject": false,
@@ -199,7 +198,7 @@
             },
             {
                 "Name": "Earth",
-                "Type": "UI",
+                "Type": "UI ",
                 "Systems": [
                     "Spicy",
                     "Data_Monitor"
@@ -208,8 +207,8 @@
                 "Generate_Collider": false,
                 "Mesh_Path": "StaticMesh'/Game/Solar_System/Earth/Solar_System_Models_Earth.Solar_System_Models_Earth'",
                 "BP_Path": "/Game/Solar_System/Earth/Octants8k/OctantEarthBP.OctantEarthBP_C",
-                "Scale": 1,
-                "Mass": 1,
+                "Scale": 1.0,
+                "Mass": 1.0,
                 "RenderFar": true,
                 "Parameters": {
                     "ControlledObject": false,
